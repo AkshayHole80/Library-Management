@@ -24,7 +24,7 @@ public class BookController {
     private final IBookService bookService;
 
     @PostMapping
-    @Operation(summary = "Create a new book")
+    @Operation(summary = "Create a frsh new book")
     public ResponseEntity<BookResponse> createBook(@Valid @RequestBody BookRequest request) {
         log.info("REST request to create book: {}", request.getTitle());
         BookResponse response = bookService.createBook(request);
