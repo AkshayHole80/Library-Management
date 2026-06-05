@@ -41,28 +41,318 @@ The application follows a clean layered architecture with SOLID principles:
 
 ## API Endpoints
 
-### Books
+### Books API
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/books` | Create a new book |
-| GET | `/api/books` | Get all books |
+#### 1. Create a Book
+**Endpoint**: `POST /api/books`  
+**Description**: Add a new book to the library inventory
 
-### Members
+**Request Headers**:
+```
+Content-Type: application/json
+```
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/members/student` | Create a student member |
-| POST | `/api/members/faculty` | Create a faculty member |
-| GET | `/api/members` | Get all members |
-| GET | `/api/members/{id}/borrowed-books` | Get books borrowed by a member |
+**Request Body**:
+```json
+{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "publisher": "Prentice Hall",
+  "bookType": "TEXTBOOK",
+  "quantity": 10
+}
+```
 
-### Borrowing
+**Valid Book Types**: `FICTION`, `NON_FICTION`, `BIOGRAPHY`, `TEXTBOOK`, `JOURNAL`, `REFERENCE`
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/members/{memberId}/borrow/{bookId}` | Borrow a book |
-| POST | `/api/members/{memberId}/return/{bookId}` | Return a book |
+**Success Response (201 Created)**:
+```json
+{
+  "id": 1,
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "publisher": "Prentice Hall",
+  "bookType": "TEXTBOOK",
+  "quantity": 10
+}
+```
+
+**Error Response (400 Bad Request)**:
+```json
+{
+  "timestamp": "2024-05-30T10:30:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Validation failed",
+  "path": "/api/books",
+  "details": [
+    "title: Title is required",
+    "quantity: Quantity must be zero or positive"
+  ]
+}
+```
+
+---
+
+#### 2. Get All Books
+**Endpoint**: `GET /api/books`  
+**Description**: Retrieve all books in the library
+
+**Success Response (200 OK)**:
+```json
+[
+  {
+    "id": 1,
+    "title": "Clean Code",
+    "author": "Robert C. Martin",
+    "publisher": "Prentice Hall",
+    "bookType": "TEXTBOOK",
+    "quantity": 10
+  },
+  {
+    "id": 2,
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "publisher": "Scribner",
+    "bookType": "FICTION",
+    "quantity": 5
+  }
+]
+```
+
+---
+
+### Members API
+
+#### 3. Create a Student Member
+**Endpoint**: `POST /api/members/student`  
+**Description**: Register a new student member (Borrowing limit: 10 books)
+
+**Request Body**:
+```json
+{
+  "name": "John Doe",
+  "rollNumber": "CS2021001"
+}
+```
+
+**Success Response (201 Created)**:
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "memberCategory": "STUDENT",
+  "borrowLimit": 10,
+  "department": null,
+  "rollNumber": "CS2021001",
+  "borrowedBookIds": []
+}
+```
+
+**Error Response (400 Bad Request)**:
+```json
+{
+  "timestamp": "2024-05-30T10:35:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Validation failed",
+  "path": "/api/members/student",
+  "details": [
+    "name: Name is required",
+    "rollNumber: Roll number is required"
+  ]
+}
+```
+
+---
+
+#### 4. Create a Faculty Member
+**Endpoint**: `POST /api/members/faculty`  
+**Description**: Register a new faculty member (Borrowing limit: 5 books)
+
+**Request Body**:
+```json
+{
+  "name": "Dr. Jane Smith",
+  "department": "Computer Science"
+}
+```
+
+**Success Response (201 Created)**:
+```json
+{
+  "id": 2,
+  "name": "Dr. Jane Smith",
+  "memberCategory": "FACULTY",
+  "borrowLimit": 5,
+  "department": "Computer Science",
+  "rollNumber": null,
+  "borrowedBookIds": []
+}
+```
+
+---
+
+#### 5. Get All Members
+**Endpoint**: `GET /api/members`  
+**Description**: Retrieve all registered members
+
+**Success Response (200 OK)**:
+```json
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "memberCategory": "STUDENT",
+    "borrowLimit": 10,
+    "department": null,
+    "rollNumber": "CS2021001",
+    "borrowedBookIds": [1, 3, 5]
+  },
+  {
+    "id": 2,
+    "name": "Dr. Jane Smith",
+    "memberCategory": "FACULTY",
+    "borrowLimit": 5,
+    "department": "Computer Science",
+    "rollNumber": null,
+    "borrowedBookIds": [2]
+  }
+]
+```
+
+---
+
+#### 6. Get Borrowed Books by Member
+**Endpoint**: `GET /api/members/{memberId}/borrowed-books`  
+**Description**: Get list of books currently borrowed by a specific member
+
+**Path Parameters**:
+- `memberId` (Long): ID of the member
+
+**Example**: `GET /api/members/1/borrowed-books`
+
+**Success Response (200 OK)**:
+```json
+[
+  {
+    "id": 1,
+    "title": "Clean Code",
+    "author": "Robert C. Martin",
+    "publisher": "Prentice Hall",
+    "bookType": "TEXTBOOK",
+    "quantity": 9
+  },
+  {
+    "id": 3,
+    "title": "Design Patterns",
+    "author": "Gang of Four",
+    "publisher": "Addison-Wesley",
+    "bookType": "TEXTBOOK",
+    "quantity": 3
+  }
+]
+```
+
+**Error Response (404 Not Found)**:
+```json
+{
+  "timestamp": "2024-05-30T10:40:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Member not found with id: 999",
+  "path": "/api/members/999/borrowed-books",
+  "details": null
+}
+```
+
+---
+
+### Borrowing API
+
+#### 7. Borrow a Book
+**Endpoint**: `POST /api/members/{memberId}/borrow/{bookId}`  
+**Description**: Allow a member to borrow a book
+
+**Path Parameters**:
+- `memberId` (Long): ID of the member
+- `bookId` (Long): ID of the book
+
+**Example**: `POST /api/members/1/borrow/2`
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Book borrowed successfully"
+}
+```
+
+**Error Response (409 Conflict - Book Not Available)**:
+```json
+{
+  "timestamp": "2024-05-30T10:45:00",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Book is not available",
+  "path": "/api/members/1/borrow/2",
+  "details": null
+}
+```
+
+**Error Response (409 Conflict - Borrowing Limit Reached)**:
+```json
+{
+  "timestamp": "2024-05-30T10:45:00",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Member has reached the borrowing limit",
+  "path": "/api/members/1/borrow/2",
+  "details": null
+}
+```
+
+**Error Response (404 Not Found)**:
+```json
+{
+  "timestamp": "2024-05-30T10:45:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Book not found with id: 999",
+  "path": "/api/members/1/borrow/999",
+  "details": null
+}
+```
+
+---
+
+#### 8. Return a Book
+**Endpoint**: `POST /api/members/{memberId}/return/{bookId}`  
+**Description**: Allow a member to return a borrowed book
+
+**Path Parameters**:
+- `memberId` (Long): ID of the member
+- `bookId` (Long): ID of the book
+
+**Example**: `POST /api/members/1/return/2`
+
+**Success Response (200 OK)**:
+```json
+{
+  "message": "Book returned successfully"
+}
+```
+
+**Error Response (409 Conflict - Book Not Borrowed)**:
+```json
+{
+  "timestamp": "2024-05-30T10:50:00",
+  "status": 409,
+  "error": "Conflict",
+  "message": "Member did not borrow this book",
+  "path": "/api/members/1/return/2",
+  "details": null
+}
+```
 
 ## Getting Started
 
