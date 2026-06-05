@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
-@Tag(name = "Member Controller", description = "Endpoints for managing members and borrowing/returning books")
+@Tag(name = "Member Controller", description = "Endpoints for managing members and borrowing and returning books")
 @Slf4j
 public class MemberController {
 
