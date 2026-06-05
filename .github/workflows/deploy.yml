@@ -32,10 +32,10 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Build Docker Image
-      run: docker build -t ${{secrets.DOCKER_USERNAME}}/library-management:latest
+      run: docker build -t ${{secrets.DOCKERHUB_USERNAME}}/library-management:latest
 
     - name: Push Image to Docker Hub
-      run: docker push ${{secrets.DOCKER_USERNAME}}/library-management:latest
+      run: docker push ${{secrets.DOCKERHUB_USERNAME}}/library-management:latest
 
     - name: SSH and Deploy to EC2
       uses: appleboy/ssh-action@v1
@@ -46,5 +46,5 @@ jobs:
         script: |
             docker stop library-management || true
             docker rm library-management || true
-            docker pull ${{secrets.DOCKER_USERNAME}}/library-management:latest
-            docker run -d --name library-management -p 8080:8080 ${{secrets.DOCKER_USERNAME}}/library-management:latest
+            docker pull ${{secrets.DOCKERHUB_USERNAME}}/library-management:latest
+            docker run -d --name library-management -p 8080:8080 ${{secrets.DOCKERHUB_USERNAME}}/library-management:latest
