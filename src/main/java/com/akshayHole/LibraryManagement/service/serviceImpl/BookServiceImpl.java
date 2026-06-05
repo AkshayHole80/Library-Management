@@ -43,6 +43,6 @@ public class BookServiceImpl implements IBookService {
     @Transactional(readOnly = true)
     public Book findBookById(Long bookId) {
         return bookRepository.findById(bookId)
-                .orElseThrow(() -> new ResourceNotFoundException("Book:", bookId));
+                .orElseThrow(() -> new ResourceNotFoundException("Book", bookId));
     }
 }
